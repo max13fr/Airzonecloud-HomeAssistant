@@ -41,7 +41,18 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     from AirzoneCloud import AirzoneCloud
 
-    api = AirzoneCloud(username, password, base_url=url_api)
+    api = None
+    try:
+        api = AirzoneCloud(username, password, base_url=url_api)
+    except Exception as err:
+        _LOGGER.error(err)
+        hass.services.call(
+            "persistent_notification",
+            "create",
+            {"title": "Airzonecloud error", "message": str(err)},
+        )
+        return
+
     entities = []
     for device in api.devices:
         for system in device.systems:
