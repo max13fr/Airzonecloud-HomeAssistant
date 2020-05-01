@@ -12,18 +12,18 @@ Allow to view & control all your zones register on your Airzone Cloud account fr
 
 In your home assistant directory (where you have your **configuration.yaml**) :
 
-* create the directory **custom_components** if not already existing
-* copy **airzonecloud** directory from this github repository inside **custom_components**. In case of upgrade, you can delete the **airzonecloud** first then copy the new one.
+- create the directory **custom_components** if not already existing
+- copy **airzonecloud** directory from this github repository inside **custom_components**. In case of upgrade, you can delete the **airzonecloud** first then copy the new one.
 
 Finally, you should have the following tree :
 
-* configuration.yaml
-* custom_components/
-  * airzonecloud/
-    * \_\_init__.py
-    * climate.py
-    * const.py
-    * manifest.py
+- configuration.yaml
+- custom_components/
+  - airzonecloud/
+    - \_\_init\_\_.py
+    - climate.py
+    - const.py
+    - manifest.py
 
 ### Configure
 
@@ -37,6 +37,8 @@ climate:
 ```
 
 You're username & password should match what you use to connect to https://www.airzonecloud.com
+
+Don't forget to restart your Home Assistant when you update your configuration.
 
 #### Specific API
 

@@ -76,7 +76,7 @@ class AirzonecloudZone(ClimateDevice):
     @property
     def unique_id(self) -> Optional[str]:
         """Return a unique ID."""
-        return "zone-" + self._azc_zone.id
+        return "zone_" + self._azc_zone.id
 
     @property
     def name(self):
@@ -193,7 +193,7 @@ class AirzonecloudSystem(ClimateDevice):
     @property
     def unique_id(self) -> Optional[str]:
         """Return a unique ID."""
-        return "system-" + self._azc_system.id
+        return "system_" + self._azc_system.id
 
     @property
     def name(self):
