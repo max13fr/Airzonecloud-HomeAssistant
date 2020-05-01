@@ -34,14 +34,14 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Airzonecloud platform"""
     username = config.get("username")
     password = config.get("password")
-    base_url_api = config.get("bas_url_api")
+    url_api = config.get("url_api")
     if username is None or password is None:
         _LOGGER.error("missing username or password config")
         return
 
     from AirzoneCloud import AirzoneCloud
 
-    api = AirzoneCloud(username, password, base_url=base_url_api)
+    api = AirzoneCloud(username, password, base_url=url_api)
     entities = []
     for device in api.devices:
         for system in device.systems:
