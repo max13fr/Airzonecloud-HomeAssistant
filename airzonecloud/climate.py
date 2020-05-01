@@ -70,9 +70,13 @@ class AirzonecloudZone(ClimateDevice):
 
     def __init__(self, azc_zone):
         """Initialize the zone"""
-        self.entity_id = ENTITY_ID_FORMAT.format("zone_" + azc_zone.id)
         self._azc_zone = azc_zone
-        _LOGGER.info("init zone {} ({})".format(self.entity_id, self.name))
+        _LOGGER.info("init zone {} ({})".format(self.name, self.unique_id))
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return a unique ID."""
+        return "zone-" + self._azc_zone.id
 
     @property
     def name(self):
@@ -179,13 +183,17 @@ class AirzonecloudZone(ClimateDevice):
 class AirzonecloudSystem(ClimateDevice):
     """Representation of an Airzonecloud System"""
 
-    hidden = True
+    hidden = True  # default hidden
 
     def __init__(self, azc_system):
         """Initialize the system"""
-        self.entity_id = ENTITY_ID_FORMAT.format("system_" + azc_system.id)
         self._azc_system = azc_system
-        _LOGGER.info("init system {} ({})".format(self.entity_id, self.name))
+        _LOGGER.info("init system {} ({})".format(self.name, self.unique_id))
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return a unique ID."""
+        return "system-" + self._azc_system.id
 
     @property
     def name(self):
