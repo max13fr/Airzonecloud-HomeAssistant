@@ -40,20 +40,6 @@ You're username & password should match what you use to connect to https://www.a
 
 Don't forget to restart your Home Assistant when you update your configuration.
 
-#### Specific API
-
-If you use are rebranded Airzone, you should change the API (default to https://www.airzonecloud.com).
-
-Here an example for Daikin rebranded Airzone :
-
-```
-climate:
-  - platform: airzonecloud
-    username: your@mail.com
-    password: yourpassword
-    url_api: https://dkn.airzonecloud.com
-```
-
 #### Change refresh interval
 
 Default refresh interval is **10 seconds**.
