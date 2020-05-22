@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from datetime import timedelta
 from homeassistant.const import TEMP_CELSIUS, ATTR_TEMPERATURE
 from homeassistant.util.temperature import convert as convert_temperature
-from homeassistant.components.climate import ClimateDevice
+from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     HVAC_MODE_OFF,
     HVAC_MODE_HEAT,
@@ -65,7 +65,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     add_entities(entities)
 
 
-class AirzonecloudZone(ClimateDevice):
+class AirzonecloudZone(ClimateEntity):
     """Representation of an Airzonecloud Zone"""
 
     def __init__(self, azc_zone):
@@ -180,7 +180,7 @@ class AirzonecloudZone(ClimateDevice):
         )
 
 
-class AirzonecloudSystem(ClimateDevice):
+class AirzonecloudSystem(ClimateEntity):
     """Representation of an Airzonecloud System"""
 
     hidden = True  # default hidden
