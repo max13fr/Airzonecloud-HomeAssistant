@@ -114,6 +114,11 @@ class AirzonecloudZone(ClimateEntity):
         return AIRZONECLOUD_ZONE_HVAC_MODES
 
     @property
+    def current_humidity(self) -> Optional[float]:
+        """Return the current humidity."""
+        return self._azc_zone.current_humidity
+
+    @property
     def current_temperature(self) -> Optional[float]:
         """Return the current temperature."""
         return self._azc_zone.current_temperature
