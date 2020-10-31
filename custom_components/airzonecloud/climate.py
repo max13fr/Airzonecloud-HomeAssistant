@@ -13,7 +13,7 @@ from homeassistant.components.climate.const import (
     HVAC_MODES,
     SUPPORT_TARGET_TEMPERATURE,
 )
-from .const import CONF_USERNAME, CONF_PASSWORD, CONF_BASE_URL_API
+from .const import CONF_USERNAME, CONF_PASSWORD
 
 # init logger
 _LOGGER = logging.getLogger(__name__)
@@ -32,9 +32,8 @@ AIRZONECLOUD_ZONE_HVAC_MODES = [
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Airzonecloud platform"""
-    username = config.get("username")
-    password = config.get("password")
-    url_api = config.get("url_api")
+    username = config.get(CONF_USERNAME)
+    password = config.get(CONF_PASSWORD)
     if username is None or password is None:
         _LOGGER.error("missing username or password config")
         return
@@ -43,7 +42,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     api = None
     try:
-        api = AirzoneCloud(username, password, base_url=url_api)
+        api = AirzoneCloud(username, password)
     except Exception as err:
         _LOGGER.error(err)
         hass.services.call(
