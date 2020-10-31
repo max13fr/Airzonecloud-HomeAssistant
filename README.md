@@ -13,7 +13,7 @@ Allow to view & control all your zones register on your Airzone Cloud account fr
 In your home assistant directory (where you have your **configuration.yaml**) :
 
 - create the directory **custom_components** if not already existing
-- copy **airzonecloud** directory from this github repository inside **custom_components**. In case of upgrade, you can delete the **airzonecloud** first then copy the new one.
+- copy **custom_components/airzonecloud** directory from this github repository inside your **custom_components**. In case of upgrade, you can delete the **airzonecloud** first then copy the new one.
 
 Finally, you should have the following tree :
 

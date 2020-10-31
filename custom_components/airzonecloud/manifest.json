@@ -1,7 +1,8 @@
 {
   "domain": "airzonecloud",
   "name": "Airzone Cloud",
-  "documentation": "https://www.home-assistant.io/components/airzonecloud",
+  "documentation": "https://github.com/max13fr/Airzonecloud-HomeAssistant",
+  "issue_tracker": "https://github.com/max13fr/Airzonecloud-HomeAssistant/issues",
   "dependencies": [],
   "after_dependencies": ["http"],
   "codeowners": ["@max13fr"],
