@@ -166,10 +166,10 @@ class AirzonecloudDevice(ClimateEntity):
     def set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
         if hvac_mode == HVAC_MODE_OFF:
-            self.turn_off()
+            self._device.turn_off()
         else:
             if not self._device.is_on:
-                self.turn_on(auto_refresh=False)
+                self._device.turn_on(auto_refresh=False)
 
             # set hvac mode on parent system
             if hvac_mode == HVAC_MODE_HEAT:
@@ -179,7 +179,7 @@ class AirzonecloudDevice(ClimateEntity):
             elif hvac_mode == HVAC_MODE_DRY:
                 self._device.group.set_mode("dehumidify")
             elif hvac_mode == HVAC_MODE_FAN_ONLY:
-                self._device.group.set_mode("ventilate")
+                self._device.group.set_mode("ventilation")
 
     def turn_on(self):
         """Turn on."""
