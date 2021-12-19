@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 # default refresh interval
 SCAN_INTERVAL = timedelta(seconds=10)
 
-AIRZONECLOUD_ZONE_HVAC_MODES = [
+AIRZONECLOUD_HVAC_MODES = [
     HVAC_MODE_OFF,
     HVAC_MODE_HEAT,
     HVAC_MODE_COOL,
@@ -53,34 +53,29 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         return
 
     entities = []
-    for device in api.devices:
-        for system in device.systems:
-            # add zones
-            for zone in system.zones:
-                entities.append(AirzonecloudZone(zone))
-            # add system to allow grouped update on all sub zones
-            entities.append(AirzonecloudSystem(system))
+    for device in api.all_devices:
+        entities.append(AirzonecloudDevice(device))
 
     add_entities(entities)
 
 
-class AirzonecloudZone(ClimateEntity):
-    """Representation of an Airzonecloud Zone"""
+class AirzonecloudDevice(ClimateEntity):
+    """Representation of an Airzonecloud Device (a zone)"""
 
-    def __init__(self, azc_zone):
-        """Initialize the zone"""
-        self._azc_zone = azc_zone
-        _LOGGER.info("init zone {} ({})".format(self.name, self.unique_id))
+    def __init__(self, device):
+        """Initialize the device"""
+        self._device = device
+        _LOGGER.info("init device {} ({})".format(self.name, self.unique_id))
 
     @property
     def unique_id(self) -> Optional[str]:
         """Return a unique ID."""
-        return "zone_" + self._azc_zone.id
+        return "device_" + self._device.id
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return "{} - {}".format(self._azc_zone.system.name, self._azc_zone.name)
+        return "{} - {}".format(self._device.group.name, self._device.name)
 
     @property
     def temperature_unit(self):
@@ -90,16 +85,27 @@ class AirzonecloudZone(ClimateEntity):
     @property
     def hvac_mode(self) -> str:
         """Return hvac operation ie. heat, cool mode."""
-        mode = self._azc_zone.mode
+        mode = self._device.mode
 
-        if self._azc_zone.is_on:
-            if mode in ["cool-air", "cool-radiant", "cool-both"]:
+        if self._device.is_on:
+            if mode in [
+                "cooling",
+                "air-cooling",
+                "radiant-cooling",
+                "combined-cooling",
+            ]:
                 return HVAC_MODE_COOL
 
-            if mode in ["heat-air", "heat-radiant", "heat-both"]:
+            if mode in [
+                "heating",
+                "air-heating",
+                "radiant-heating",
+                "combined-heating",
+                "emergency-heating",
+            ]:
                 return HVAC_MODE_HEAT
 
-            if mode == "ventilate":
+            if mode == "ventilation":
                 return HVAC_MODE_FAN_ONLY
 
             if mode == "dehumidify":
@@ -110,59 +116,27 @@ class AirzonecloudZone(ClimateEntity):
     @property
     def hvac_modes(self) -> List[str]:
         """Return the list of available hvac operation modes."""
-        return AIRZONECLOUD_ZONE_HVAC_MODES
+        return AIRZONECLOUD_HVAC_MODES
 
     @property
     def current_humidity(self) -> Optional[float]:
         """Return the current humidity."""
-        return self._azc_zone.current_humidity
+        return self._device.current_humidity
 
     @property
     def current_temperature(self) -> Optional[float]:
         """Return the current temperature."""
-        return self._azc_zone.current_temperature
+        return self._device.current_temperature
 
     @property
     def target_temperature(self) -> Optional[float]:
         """Return the temperature we try to reach."""
-        return self._azc_zone.target_temperature
+        return self._device.target_temperature
 
     @property
     def target_temperature_step(self) -> Optional[float]:
         """Return the supported step of target temperature."""
-        return 0.5
-
-    def set_temperature(self, **kwargs) -> None:
-        """Set new target temperature."""
-        temperature = kwargs.get(ATTR_TEMPERATURE)
-        if temperature is not None:
-            self._azc_zone.set_temperature(round(float(temperature), 1))
-
-    def set_hvac_mode(self, hvac_mode: str) -> None:
-        """Set new target hvac mode."""
-        if hvac_mode == HVAC_MODE_OFF:
-            self.turn_off()
-        else:
-            if not self._azc_zone.is_on:
-                self.turn_on()
-
-            # set hvac mode on parent system
-            if hvac_mode == HVAC_MODE_HEAT:
-                self._azc_zone.system.set_mode("heat-both")
-            elif hvac_mode == HVAC_MODE_COOL:
-                self._azc_zone.system.set_mode("cool-both")
-            elif hvac_mode == HVAC_MODE_DRY:
-                self._azc_zone.system.set_mode("dehumidify")
-            elif hvac_mode == HVAC_MODE_FAN_ONLY:
-                self._azc_zone.system.set_mode("ventilate")
-
-    def turn_on(self):
-        """Turn on."""
-        self._azc_zone.turn_on()
-
-    def turn_off(self):
-        """Turn off."""
-        self._azc_zone.turn_off()
+        return self._device.step_temperature
 
     @property
     def supported_features(self):
@@ -173,83 +147,47 @@ class AirzonecloudZone(ClimateEntity):
     def min_temp(self) -> float:
         """Return the minimum temperature."""
         return convert_temperature(
-            self._azc_zone.system.min_temp, TEMP_CELSIUS, self.temperature_unit
+            self._device.min_temperature, TEMP_CELSIUS, self.temperature_unit
         )
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
         return convert_temperature(
-            self._azc_zone.system.max_temp, TEMP_CELSIUS, self.temperature_unit
+            self._device.max_temperature, TEMP_CELSIUS, self.temperature_unit
         )
 
-
-class AirzonecloudSystem(ClimateEntity):
-    """Representation of an Airzonecloud System"""
-
-    hidden = True  # default hidden
-
-    def __init__(self, azc_system):
-        """Initialize the system"""
-        self._azc_system = azc_system
-        _LOGGER.info("init system {} ({})".format(self.name, self.unique_id))
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        """Return a unique ID."""
-        return "system_" + self._azc_system.id
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._azc_system.name
-
-    @property
-    def temperature_unit(self):
-        """Return the unit of measurement used by the platform."""
-        return TEMP_CELSIUS
-
-    @property
-    def hvac_mode(self) -> str:
-        """Return hvac operation ie. heat, cool mode."""
-        mode = self._azc_system.mode
-
-        if mode in ["cool-air", "cool-radiant", "cool-both"]:
-            return HVAC_MODE_COOL
-
-        if mode in ["heat-air", "heat-radiant", "heat-both"]:
-            return HVAC_MODE_HEAT
-
-        if mode == "ventilate":
-            return HVAC_MODE_FAN_ONLY
-
-        if mode == "dehumidify":
-            return HVAC_MODE_DRY
-
-        return HVAC_MODE_OFF
-
-    @property
-    def hvac_modes(self) -> List[str]:
-        """Return the list of available hvac operation modes."""
-        return AIRZONECLOUD_ZONE_HVAC_MODES
+    def set_temperature(self, **kwargs) -> None:
+        """Set new target temperature."""
+        temperature = kwargs.get(ATTR_TEMPERATURE)
+        if temperature is not None:
+            self._device.set_temperature(round(float(temperature), 1))
 
     def set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
         if hvac_mode == HVAC_MODE_OFF:
-            self._azc_system.set_mode("stop")
-        if hvac_mode == HVAC_MODE_HEAT:
-            self._azc_system.set_mode("heat-both")
-        elif hvac_mode == HVAC_MODE_COOL:
-            self._azc_system.set_mode("cool-both")
-        elif hvac_mode == HVAC_MODE_DRY:
-            self._azc_system.set_mode("dehumidify")
-        elif hvac_mode == HVAC_MODE_FAN_ONLY:
-            self._azc_system.set_mode("ventilate")
+            self.turn_off()
+        else:
+            if not self._device.is_on:
+                self.turn_on(auto_refresh=False)
 
-    @property
-    def supported_features(self):
-        """Return the list of supported features."""
-        return 0
+            # set hvac mode on parent system
+            if hvac_mode == HVAC_MODE_HEAT:
+                self._device.group.set_mode("heating")
+            elif hvac_mode == HVAC_MODE_COOL:
+                self._device.group.set_mode("cooling")
+            elif hvac_mode == HVAC_MODE_DRY:
+                self._device.group.set_mode("dehumidify")
+            elif hvac_mode == HVAC_MODE_FAN_ONLY:
+                self._device.group.set_mode("ventilate")
+
+    def turn_on(self):
+        """Turn on."""
+        self._device.turn_on()
+
+    def turn_off(self):
+        """Turn off."""
+        self._device.turn_off()
 
     def update(self):
-        self._azc_system.refresh(True)
+        self._device.refresh()
