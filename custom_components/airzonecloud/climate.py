@@ -10,7 +10,6 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_COOL,
     HVAC_MODE_DRY,
     HVAC_MODE_FAN_ONLY,
-    HVAC_MODES,
     SUPPORT_TARGET_TEMPERATURE,
 )
 from .const import CONF_USERNAME, CONF_PASSWORD
@@ -53,14 +52,17 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         return
 
     entities = []
-    for device in api.all_devices:
-        entities.append(AirzonecloudDevice(device))
+    for installation in api.installations:
+        for group in installation.groups:
+            entities.append(AirzonecloudGroup(group))
+            for device in group.devices:
+                entities.append(AirzonecloudDevice(device))
 
     add_entities(entities)
 
 
 class AirzonecloudDevice(ClimateEntity):
-    """Representation of an Airzonecloud Device (a zone)"""
+    """Representation of an Airzonecloud Device (a thermostat zone)"""
 
     def __init__(self, device):
         """Initialize the device"""
@@ -189,5 +191,91 @@ class AirzonecloudDevice(ClimateEntity):
         """Turn off."""
         self._device.turn_off()
 
+
+class AirzonecloudGroup(ClimateEntity):
+    """Representation of an Airzonecloud Group (the air conditioner hardware)"""
+
+    def __init__(self, group):
+        """Initialize the group"""
+        self._group = group
+        _LOGGER.info("init group {} ({})".format(self.name, self.unique_id))
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return a unique ID."""
+        return "group_" + self._group.id
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return "{}".format(self._group.name)
+
+    @property
+    def temperature_unit(self):
+        """Return the unit of measurement used by the platform."""
+        return TEMP_CELSIUS
+
+    @property
+    def hvac_mode(self) -> str:
+        """Return hvac operation ie. heat, cool mode."""
+        mode = self._group.mode
+
+        if self._group.is_on:
+            if mode in [
+                "cooling",
+                "air-cooling",
+                "radiant-cooling",
+                "combined-cooling",
+            ]:
+                return HVAC_MODE_COOL
+
+            if mode in [
+                "heating",
+                "air-heating",
+                "radiant-heating",
+                "combined-heating",
+                "emergency-heating",
+            ]:
+                return HVAC_MODE_HEAT
+
+            if mode == "ventilation":
+                return HVAC_MODE_FAN_ONLY
+
+            if mode == "dehumidify":
+                return HVAC_MODE_DRY
+
+        return HVAC_MODE_OFF
+
+    @property
+    def hvac_modes(self) -> List[str]:
+        """Return the list of available hvac operation modes."""
+        return AIRZONECLOUD_HVAC_MODES
+
+    @property
+    def supported_features(self):
+        """Return the list of supported features."""
+        return 0
+
+    def set_hvac_mode(self, hvac_mode: str) -> None:
+        """Set new target hvac mode."""
+        if hvac_mode == HVAC_MODE_OFF:
+            self._group.set_mode("stop")
+        elif hvac_mode == HVAC_MODE_HEAT:
+            self._group.set_mode("heating")
+        elif hvac_mode == HVAC_MODE_COOL:
+            self._group.set_mode("cooling")
+        elif hvac_mode == HVAC_MODE_DRY:
+            self._group.set_mode("dehumidify")
+        elif hvac_mode == HVAC_MODE_FAN_ONLY:
+            self._group.set_mode("ventilation")
+
+    def turn_on(self):
+        """Turn on."""
+        self._group.turn_on()
+
+    def turn_off(self):
+        """Turn off."""
+        self._group.turn_off()
+
     def update(self):
-        self._device.refresh()
+        self._group.refresh_devices()
