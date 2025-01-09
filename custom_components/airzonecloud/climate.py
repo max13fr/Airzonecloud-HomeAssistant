@@ -5,12 +5,8 @@ from homeassistant.const import UnitOfTemperature, ATTR_TEMPERATURE
 from homeassistant.util.unit_conversion import TemperatureConverter
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
-    HVAC_MODE_OFF,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_COOL,
-    HVAC_MODE_DRY,
-    HVAC_MODE_FAN_ONLY,
-    SUPPORT_TARGET_TEMPERATURE,
+    HVACMode,
+    ClimateEntityFeature,
 )
 from .const import CONF_USERNAME, CONF_PASSWORD
 
@@ -21,11 +17,11 @@ _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(seconds=10)
 
 AIRZONECLOUD_HVAC_MODES = [
-    HVAC_MODE_OFF,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_COOL,
-    HVAC_MODE_DRY,
-    HVAC_MODE_FAN_ONLY,
+    HVACMode.OFF,
+    HVACMode.HEAT,
+    HVACMode.COOL,
+    HVACMode.DRY,
+    HVACMode.FAN_ONLY,
 ]
 
 
@@ -96,7 +92,7 @@ class AirzonecloudDevice(ClimateEntity):
                 "radiant-cooling",
                 "combined-cooling",
             ]:
-                return HVAC_MODE_COOL
+                return HVACMode.COOL
 
             if mode in [
                 "heating",
@@ -105,15 +101,15 @@ class AirzonecloudDevice(ClimateEntity):
                 "combined-heating",
                 "emergency-heating",
             ]:
-                return HVAC_MODE_HEAT
+                return HVACMode.HEAT
 
             if mode == "ventilation":
-                return HVAC_MODE_FAN_ONLY
+                return HVACMode.FAN_ONLY
 
             if mode == "dehumidify":
-                return HVAC_MODE_DRY
+                return HVACMode.DRY
 
-        return HVAC_MODE_OFF
+        return HVACMode.OFF
 
     @property
     def hvac_modes(self) -> List[str]:
@@ -143,7 +139,7 @@ class AirzonecloudDevice(ClimateEntity):
     @property
     def supported_features(self):
         """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE
+        return ClimateEntityFeature.TARGET_TEMPERATURE
 
     @property
     def min_temp(self) -> float:
@@ -167,20 +163,20 @@ class AirzonecloudDevice(ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
-        if hvac_mode == HVAC_MODE_OFF:
+        if hvac_mode == HVACMode.OFF:
             self._device.turn_off()
         else:
             if not self._device.is_on:
                 self._device.turn_on(auto_refresh=False)
 
             # set hvac mode on parent system
-            if hvac_mode == HVAC_MODE_HEAT:
+            if hvac_mode == HVACMode.HEAT:
                 self._device.group.set_mode("heating")
-            elif hvac_mode == HVAC_MODE_COOL:
+            elif hvac_mode == HVACMode.COOL:
                 self._device.group.set_mode("cooling")
-            elif hvac_mode == HVAC_MODE_DRY:
+            elif hvac_mode == HVACMode.DRY:
                 self._device.group.set_mode("dehumidify")
-            elif hvac_mode == HVAC_MODE_FAN_ONLY:
+            elif hvac_mode == HVACMode.FAN_ONLY:
                 self._device.group.set_mode("ventilation")
 
     def turn_on(self):
@@ -227,7 +223,7 @@ class AirzonecloudGroup(ClimateEntity):
                 "radiant-cooling",
                 "combined-cooling",
             ]:
-                return HVAC_MODE_COOL
+                return HVACMode.COOL
 
             if mode in [
                 "heating",
@@ -236,15 +232,15 @@ class AirzonecloudGroup(ClimateEntity):
                 "combined-heating",
                 "emergency-heating",
             ]:
-                return HVAC_MODE_HEAT
+                return HVACMode.HEAT
 
             if mode == "ventilation":
-                return HVAC_MODE_FAN_ONLY
+                return HVACMode.FAN_ONLY
 
             if mode == "dehumidify":
-                return HVAC_MODE_DRY
+                return HVACMode.DRY
 
-        return HVAC_MODE_OFF
+        return HVACMode.OFF
 
     @property
     def hvac_modes(self) -> List[str]:
@@ -258,15 +254,15 @@ class AirzonecloudGroup(ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
-        if hvac_mode == HVAC_MODE_OFF:
+        if hvac_mode == HVACMode.OFF:
             self._group.set_mode("stop")
-        elif hvac_mode == HVAC_MODE_HEAT:
+        elif hvac_mode == HVACMode.HEAT:
             self._group.set_mode("heating")
-        elif hvac_mode == HVAC_MODE_COOL:
+        elif hvac_mode == HVACMode.COOL:
             self._group.set_mode("cooling")
-        elif hvac_mode == HVAC_MODE_DRY:
+        elif hvac_mode == HVACMode.DRY:
             self._group.set_mode("dehumidify")
-        elif hvac_mode == HVAC_MODE_FAN_ONLY:
+        elif hvac_mode == HVACMode.FAN_ONLY:
             self._group.set_mode("ventilation")
 
     def turn_on(self):
