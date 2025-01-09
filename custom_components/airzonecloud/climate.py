@@ -78,7 +78,7 @@ class AirzonecloudDevice(ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement used by the platform."""
-        return UnitOfTemperature.TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def hvac_mode(self) -> str:
@@ -145,14 +145,14 @@ class AirzonecloudDevice(ClimateEntity):
     def min_temp(self) -> float:
         """Return the minimum temperature."""
         return TemperatureConverter.convert(
-            self._device.min_temperature, UnitOfTemperature.TEMP_CELSIUS, self.temperature_unit
+            self._device.min_temperature, UnitOfTemperature.CELSIUS, self.temperature_unit
         )
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
         return TemperatureConverter.convert(
-            self._device.max_temperature, UnitOfTemperature.TEMP_CELSIUS, self.temperature_unit
+            self._device.max_temperature, UnitOfTemperature.CELSIUS, self.temperature_unit
         )
 
     def set_temperature(self, **kwargs) -> None:
@@ -209,7 +209,7 @@ class AirzonecloudGroup(ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement used by the platform."""
-        return UnitOfTemperature.TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def hvac_mode(self) -> str:
