@@ -250,7 +250,7 @@ class AirzonecloudGroup(ClimateEntity):
     @property
     def supported_features(self):
         """Return the list of supported features."""
-        return 0
+        return ClimateEntityFeature(0)
 
     def set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
